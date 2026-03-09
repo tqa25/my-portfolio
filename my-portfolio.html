@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tô Quốc Anh - Parallax 3D Portfolio</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Poppins', 'Noto Sans KR', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#00ffcc',
+                        secondary: '#b026ff',
+                        darkBg: '#0a0a0a',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            background-color: #0a0a0a;
+            color: #ffffff;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* --- Parallax Hero Section --- */
+        .parallax-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(to bottom, #050510 0%, #14142b 100%);
+        }
+
+        .parallax-wrapper::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: radial-gradient(circle at center, rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            opacity: 0.3;
+            z-index: 1;
+        }
+
+        .layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        /* Neon Sun */
+        #neon-sun {
+            position: absolute;
+            top: 30%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 250px;
+            height: 250px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ff007f, #7000ff);
+            box-shadow: 0 0 100px rgba(255, 0, 127, 0.6), 0 0 200px rgba(112, 0, 255, 0.4);
+            z-index: 2;
+        }
+
+        /* City Back Silhouette */
+        #city-back {
+            bottom: 0;
+            top: auto;
+            height: 60vh;
+            width: 100vw;
+            z-index: 3;
+            object-fit: cover;
+            object-position: bottom;
+            opacity: 0.7;
+            filter: drop-shadow(0 -10px 30px rgba(0, 255, 204, 0.2));
+        }
+
+        /* Main Text Layer */
+        #hero-text {
+            position: absolute;
+            z-index: 4;
+            text-align: center;
+            top: 35%;
+            width: 100%;
+            text-shadow: 0 10px 30px rgba(0,0,0,0.8);
+        }
+
+        #hero-text h1 {
+            font-size: clamp(3rem, 8vw, 7rem);
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            background: linear-gradient(to bottom, #ffffff, #a0a0a0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0;
+            line-height: 1;
+        }
+
+        #hero-text p {
+            font-size: clamp(1rem, 3vw, 2rem);
+            color: #00ffcc;
+            font-weight: 400;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            margin-top: 10px;
+        }
+
+        /* City Front Silhouette */
+        #city-front {
+            bottom: 0;
+            top: auto;
+            height: 45vh;
+            width: 100vw;
+            z-index: 5;
+            object-fit: cover;
+            object-position: bottom;
+        }
+
+        /* Content Area - Must sit perfectly below parallax */
+        .content-section {
+            position: relative;
+            z-index: 10;
+            background-color: #0a0a0a;
+            padding-top: 50px;
+        }
+
+        /* Glassmorphism Classes */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border-radius: 1rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 255, 204, 0.15);
+            border: 1px solid rgba(0, 255, 204, 0.3);
+        }
+
+        /* --- Scroll Animation Classes --- */
+        .reveal {
+            opacity: 0;
+            transform: translateY(80px);
+            transition: all 1s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .delay-100 { transition-delay: 100ms; }
+        .delay-200 { transition-delay: 200ms; }
+        .delay-300 { transition-delay: 300ms; }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #050510; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #00ffcc; }
+
+        .text-gradient {
+            background: linear-gradient(90deg, #ffffff, #00ffcc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .timeline-dot {
+            width: 14px;
+            height: 14px;
+            background-color: #00ffcc;
+            border-radius: 50%;
+            position: absolute;
+            left: -7px;
+            top: 6px;
+            box-shadow: 0 0 15px #00ffcc;
+            border: 2px solid #0a0a0a;
+        }
+
+        /* Lang switch buttons */
+        .lang-btn {
+            opacity: 0.5;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .lang-btn.active {
+            opacity: 1;
+            color: #00ffcc;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-primary selection:text-black">
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 glass-card rounded-none border-x-0 border-t-0 px-6 py-4 flex justify-between items-center bg-[#0a0a0a]/80 backdrop-blur-md">
+        <div class="text-xl font-bold tracking-wider text-white">
+            TQA<span class="text-primary">.</span>
+        </div>
+        
+        <div class="hidden md:flex space-x-8 text-sm font-medium">
+            <a href="#about" class="hover:text-primary transition-colors" data-i18n="nav_about">소개</a>
+            <a href="#experience" class="hover:text-primary transition-colors" data-i18n="nav_exp">경력</a>
+            <a href="#education" class="hover:text-primary transition-colors" data-i18n="nav_edu">학력</a>
+        </div>
+
+        <div class="flex items-center gap-4">
+            <!-- Language Switcher -->
+            <div class="flex space-x-2 text-xs font-bold mr-4 border-r border-gray-600 pr-4">
+                <span class="lang-btn active hover:text-primary" onclick="changeLang('ko')">KO</span>
+                <span class="text-gray-600">|</span>
+                <span class="lang-btn hover:text-primary" onclick="changeLang('vi')">VI</span>
+                <span class="text-gray-600">|</span>
+                <span class="lang-btn hover:text-primary" onclick="changeLang('en')">EN</span>
+            </div>
+
+            <a href="#contact" data-i18n="nav_contact" class="hidden sm:inline-block px-5 py-2 rounded-full bg-primary/10 text-primary border border-primary/50 hover:bg-primary hover:text-black transition-all duration-300 text-sm font-bold shadow-[0_0_15px_rgba(0,255,204,0.3)]">
+                연락처 (Contact)
+            </a>
+        </div>
+    </nav>
+
+    <!-- Parallax Hero Section -->
+    <section class="parallax-wrapper" id="parallax-section">
+        <div id="neon-sun"></div>
+
+        <svg id="city-back" class="layer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <path d="M0,100 L0,60 L5,60 L5,50 L10,50 L10,65 L15,65 L15,40 L25,40 L25,70 L30,70 L30,30 L40,30 L40,55 L45,55 L45,35 L55,35 L55,60 L60,60 L60,20 L70,20 L70,45 L80,45 L80,25 L90,25 L90,50 L95,50 L95,35 L100,35 L100,100 Z" fill="#1b1b3a"/>
+        </svg>
+
+        <div id="hero-text">
+            <h1 data-i18n="hero_name">또국안</h1>
+            <p data-i18n="hero_desc">웹 개발자</p>
+        </div>
+
+        <svg id="city-front" class="layer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <path d="M0,100 L0,75 L8,75 L8,65 L18,65 L18,85 L25,85 L25,55 L35,55 L35,70 L45,70 L45,45 L58,45 L58,80 L65,80 L65,60 L75,60 L75,65 L85,65 L85,50 L95,50 L95,85 L100,85 L100,100 Z" fill="#0a0a0a"/>
+        </svg>
+    </section>
+
+    <!-- Main Content Area -->
+    <main class="content-section px-6 md:px-12 lg:px-24 max-w-7xl mx-auto flex flex-col gap-24 pb-24">
+
+        <!-- Objective Section -->
+        <section class="reveal flex flex-col items-center text-center mt-10">
+            <div class="max-w-3xl glass-card p-8 md:p-12 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent opacity-50"></div>
+                <h3 class="text-xl font-bold mb-4 text-primary tracking-widest uppercase" data-i18n="obj_title">전문적인 목표</h3>
+                <p class="text-gray-300 leading-relaxed text-lg text-justify md:text-center" data-i18n="obj_desc">
+                    "학업을 통해 습득한 전문 지식과 실무 경험을 바탕으로 최적의 작업 프로세스를 구축하고, 고객과 기업에 실질적인 부가가치를 창출하는 개발자가 되겠습니다. 끊임없는 학습을 통해 더 큰 혜택을 제공하는 인재가 되기를 지향합니다."
+                </p>
+            </div>
+        </section>
+
+        <!-- About Me Section -->
+        <section id="about" class="pt-10">
+            <h2 class="text-4xl font-bold mb-10 text-gradient inline-block reveal" data-i18n="about_title">자가소개</h2>
+            <div class="glass-card p-8 reveal delay-100">
+                <p class="text-gray-300 leading-relaxed text-lg mb-6 text-justify" data-i18n="about_p1">
+                    안녕하십니까, 끊임없이 성장하는 개발자 <strong class="text-white">또국안</strong>입니다. <br><br>
+                    저는 베트남 호찌민에서 태어나 투득전문대학교 한국어학과 재학 중, 교수님의 적극적인 지원과 관심 덕분에 우수한 성적으로 장학금을 수여받아 한국 유학의 기회를 얻었습니다. 2017년 영남이공대학교에 입학하여 1년간 한국어 연수를 마친 후, 2018년 컴퓨터정보과에 진학하여 IT 전문 지식을 탄탄히 다졌습니다.
+                </p>
+                <p class="text-gray-300 leading-relaxed text-lg text-justify" data-i18n="about_p2">
+                    어릴 적부터 컴퓨터 기술의 발전에 큰 흥미를 느껴왔으며, 이를 바탕으로 웹 개발 및 새로운 첨단 기술을 탐구하는 것을 즐깁니다. 실무에서는 Laravel, JavaScript, HTML/CSS 등을 활용한 개발 경험이 있으며, 앞으로도 새로운 지식을 적극적으로 습득하여 조직의 발전에 기여하는 핵심 인재가 되겠습니다.
+                </p>
+            </div>
+        </section>
+
+        <!-- Two Column Layout for Experience & Education -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 pt-10">
+            
+            <!-- Experience -->
+            <section id="experience">
+                <h2 class="text-4xl font-bold mb-10 text-gradient inline-block reveal" data-i18n="exp_title">경력사항</h2>
+                <div class="border-l-2 border-gray-800 pl-8 relative space-y-12">
+                    
+                    <!-- Job 1 -->
+                    <div class="relative reveal delay-100">
+                        <div class="timeline-dot"></div>
+                        <div class="glass-card p-8 group">
+                            <h3 class="text-2xl font-bold text-white group-hover:text-primary transition-colors" data-i18n="job1_company">(주)보토</h3>
+                            <p class="text-secondary font-semibold mt-1 mb-5" data-i18n="job1_role">웹 개발자 인턴 <span class="text-gray-500 text-sm ml-2 font-normal">06/2022 - 05/2023</span></p>
+                            <ul class="list-disc list-inside text-gray-300 space-y-3 leading-relaxed">
+                                <li data-i18n="job1_task1">고객 요구사항에 따른 웹사이트 기능 개발 및 유지보수</li>
+                                <li data-i18n="job1_task2"><strong class="text-white">Laravel, JavaScript, CSS, HTML</strong>을 활용한 웹 애플리케이션 개발</li>
+                                <li data-i18n="job1_task3">재고 관리를 위한 입고 및 출고 시스템(WMS) 기능 구현</li>
+                                <li data-i18n="job1_task4">제품 추가, 삭제, 수정 등 <strong class="text-white">CRUD</strong> 핵심 프로세스 최적화</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Job 2 -->
+                    <div class="relative reveal delay-200">
+                        <div class="timeline-dot"></div>
+                        <div class="glass-card p-8 group">
+                            <h3 class="text-2xl font-bold text-white group-hover:text-primary transition-colors" data-i18n="job2_company">(주)나노아이티</h3>
+                            <p class="text-secondary font-semibold mt-1 mb-5" data-i18n="job2_role">인턴 <span class="text-gray-500 text-sm ml-2 font-normal">06/2020 - 02/2021</span></p>
+                            <ul class="list-disc list-inside text-gray-300 space-y-3 leading-relaxed">
+                                <li data-i18n="job2_task1">이메일을 통한 전문적인 고객 상담 및 서비스 지원</li>
+                                <li data-i18n="job2_task2">IT 서비스 관련 이슈 초기 대응 및 커뮤니케이션</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- Education & Skills -->
+            <section id="education" class="space-y-16">
+                <div>
+                    <h2 class="text-4xl font-bold mb-10 text-gradient inline-block reveal" data-i18n="edu_title">학력사항</h2>
+                    <div class="border-l-2 border-gray-800 pl-8 relative space-y-10">
+                        
+                        <!-- Edu 1 -->
+                        <div class="relative reveal delay-100">
+                            <div class="timeline-dot"></div>
+                            <div class="glass-card p-6 border-l-4 border-l-primary">
+                                <h3 class="text-xl font-bold text-white" data-i18n="edu1_school">영남이공대학교</h3>
+                                <p class="text-gray-300 mt-2 font-medium" data-i18n="edu1_major">컴퓨터정보과</p>
+                                <p class="text-gray-500 text-sm mt-1" data-i18n="edu1_time">대구 | 03/2018 - 03/2021 (졸업)</p>
+                            </div>
+                        </div>
+
+                        <!-- Edu 2 -->
+                        <div class="relative reveal delay-200">
+                            <div class="timeline-dot"></div>
+                            <div class="glass-card p-6 border-l-4 border-l-secondary">
+                                <h3 class="text-xl font-bold text-white" data-i18n="edu2_school">투득전문대학교</h3>
+                                <p class="text-gray-300 mt-2 font-medium" data-i18n="edu2_major">한국어학과</p>
+                                <p class="text-gray-500 text-sm mt-1" data-i18n="edu2_time">베트남 | 03/2015 - 03/2017 (졸업)</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Certifications -->
+                <div class="reveal delay-300">
+                    <h2 class="text-3xl font-bold mb-6 text-gradient inline-block" data-i18n="cert_title">자격증</h2>
+                    <div class="grid grid-cols-2 gap-6">
+                        <div class="glass-card p-6 text-center flex flex-col items-center justify-center hover:bg-primary/5 transition-colors">
+                            <div class="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                                <i class="fa-solid fa-language text-2xl text-primary"></i>
+                            </div>
+                            <h4 class="font-bold text-xl text-white" data-i18n="cert1_name">TOPIK 4급</h4>
+                            <p class="text-gray-500 text-sm mt-1">2022</p>
+                        </div>
+                        <div class="glass-card p-6 text-center flex flex-col items-center justify-center hover:bg-secondary/5 transition-colors">
+                            <div class="w-14 h-14 rounded-full bg-secondary/10 flex items-center justify-center mb-4">
+                                <i class="fa-solid fa-globe text-2xl text-secondary"></i>
+                            </div>
+                            <h4 class="font-bold text-xl text-white" data-i18n="cert2_name">TOEIC 400점</h4>
+                            <p class="text-gray-500 text-sm mt-1">2017</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+
+        <!-- Contact Section -->
+        <section id="contact" class="pt-10 mb-20 reveal">
+            <h2 class="text-4xl font-bold mb-12 text-center text-gradient" data-i18n="contact_title">연락처</h2>
+            <div class="glass-card p-10 md:p-16 max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 relative overflow-hidden">
+                <div class="absolute -bottom-20 -right-20 w-64 h-64 bg-primary rounded-full blur-[100px] opacity-10"></div>
+                <div class="absolute -top-20 -left-20 w-64 h-64 bg-secondary rounded-full blur-[100px] opacity-10"></div>
+
+                <div class="space-y-8">
+                    <div class="flex items-center gap-6 group">
+                        <div class="w-14 h-14 rounded-full bg-white/5 flex items-center justify-center text-primary text-2xl group-hover:scale-110 group-hover:bg-primary/20 transition-all">
+                            <i class="fa-solid fa-phone"></i>
+                        </div>
+                        <div>
+                            <p class="text-gray-500 text-sm font-medium uppercase tracking-wider" data-i18n="lbl_phone">전화번호</p>
+                            <p class="text-xl font-bold text-white mt-1">0798 977 886</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center gap-6 group">
+                        <div class="w-14 h-14 rounded-full bg-white/5 flex items-center justify-center text-primary text-2xl group-hover:scale-110 group-hover:bg-primary/20 transition-all">
+                            <i class="fa-solid fa-envelope"></i>
+                        </div>
+                        <div>
+                            <p class="text-gray-500 text-sm font-medium uppercase tracking-wider" data-i18n="lbl_email">이메일</p>
+                            <p class="text-xl font-bold text-white mt-1 break-all">bagu.kr.vn@gmail.com</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-8">
+                    <div class="flex items-center gap-6 group">
+                        <div class="w-14 h-14 rounded-full bg-white/5 flex items-center justify-center text-secondary text-2xl group-hover:scale-110 group-hover:bg-secondary/20 transition-all">
+                            <i class="fa-solid fa-cake-candles"></i>
+                        </div>
+                        <div>
+                            <p class="text-gray-500 text-sm font-medium uppercase tracking-wider" data-i18n="lbl_dob">생년월일</p>
+                            <p class="text-xl font-bold text-white mt-1">09 / 03 / 1991</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center gap-6 group">
+                        <div class="w-14 h-14 rounded-full bg-white/5 flex items-center justify-center text-secondary text-2xl group-hover:scale-110 group-hover:bg-secondary/20 transition-all">
+                            <i class="fa-solid fa-location-dot"></i>
+                        </div>
+                        <div>
+                            <p class="text-gray-500 text-sm font-medium uppercase tracking-wider" data-i18n="lbl_address">주소</p>
+                            <p class="text-lg font-bold text-white mt-1" data-i18n="val_address">베트남 호찌민시 투득시<br>프억빈동 6번길 121D</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="text-center py-8 text-gray-500 text-sm border-t border-gray-800/50 bg-[#050505] relative z-10">
+        <p data-i18n="footer_txt">&copy; 2026 TÔ QUỐC ANH. Developed with CSS & JS Magic.</p>
+    </footer>
+
+    <!-- Scripts (Parallax, Scroll Animation & Multi-Language) -->
+    <script>
+        // --- 1. LANGUAGE DATA (i18n) - STRICTLY SEPARATED ---
+        const translations = {
+            ko: {
+                nav_about: "소개",
+                nav_exp: "경력",
+                nav_edu: "학력",
+                nav_contact: "연락처",
+                hero_name: "또국안",
+                hero_desc: "웹 개발자",
+                obj_title: "전문적인 목표",
+                obj_desc: '"학업을 통해 습득한 전문 지식과 실무 경험을 바탕으로 최적의 작업 프로세스를 구축하고, 고객과 기업에 실질적인 부가가치를 창출하는 개발자가 되겠습니다. 끊임없는 학습을 통해 더 큰 혜택을 제공하는 인재가 되기를 지향합니다."',
+                about_title: "자가소개",
+                about_p1: '안녕하십니까, 끊임없이 성장하는 개발자 <strong class="text-white">또국안</strong>입니다. <br><br> 저는 베트남 호찌민에서 태어나 투득전문대학교 한국어학과 재학 중, 교수님의 적극적인 지원과 관심 덕분에 우수한 성적으로 장학금을 수여받아 한국 유학의 기회를 얻었습니다. 2017년 영남이공대학교에 입학하여 1년간 한국어 연수를 마친 후, 2018년 컴퓨터정보과에 진학하여 IT 전문 지식을 탄탄히 다졌습니다.',
+                about_p2: '어릴 적부터 컴퓨터 기술의 발전에 큰 흥미를 느껴왔으며, 이를 바탕으로 웹 개발 및 새로운 첨단 기술을 탐구하는 것을 즐깁니다. 실무에서는 Laravel, JavaScript, HTML/CSS 등을 활용한 개발 경험이 있으며, 앞으로도 새로운 지식을 적극적으로 습득하여 조직의 발전에 기여하는 핵심 인재가 되겠습니다.',
+                exp_title: "경력사항",
+                job1_company: "(주)보토",
+                job1_role: '웹 개발자 인턴 <span class="text-gray-500 text-sm ml-2 font-normal">06/2022 - 05/2023</span>',
+                job1_task1: "고객 요구사항에 따른 웹사이트 기능 개발 및 유지보수",
+                job1_task2: '<strong class="text-white">Laravel, JavaScript, CSS, HTML</strong>을 활용한 웹 애플리케이션 개발',
+                job1_task3: "재고 관리를 위한 입고 및 출고 시스템(WMS) 기능 구현",
+                job1_task4: '제품 추가, 삭제, 수정 등 <strong class="text-white">CRUD</strong> 핵심 프로세스 최적화',
+                job2_company: "(주)나노아이티",
+                job2_role: '인턴 <span class="text-gray-500 text-sm ml-2 font-normal">06/2020 - 02/2021</span>',
+                job2_task1: "이메일을 통한 전문적인 고객 상담 및 서비스 지원",
+                job2_task2: "IT 서비스 관련 이슈 초기 대응 및 커뮤니케이션",
+                edu_title: "학력사항",
+                edu1_school: "영남이공대학교",
+                edu1_major: "컴퓨터정보과",
+                edu1_time: "대구 | 03/2018 - 03/2021 (졸업)",
+                edu2_school: "투득전문대학교",
+                edu2_major: "한국어학과",
+                edu2_time: "베트남 | 03/2015 - 03/2017 (졸업)",
+                cert_title: "자격증",
+                cert1_name: "TOPIK 4급",
+                cert2_name: "TOEIC 400점",
+                contact_title: "연락처",
+                lbl_phone: "전화번호", lbl_email: "이메일", lbl_dob: "생년월일", lbl_address: "주소",
+                val_address: "베트남 호찌민시 투득시<br>프억빈동 6번길 121D",
+                footer_txt: "&copy; 2026 또국안. Developed with CSS & JS Magic."
+            },
+            vi: {
+                nav_about: "Giới thiệu",
+                nav_exp: "Kinh nghiệm",
+                nav_edu: "Học vấn",
+                nav_contact: "Liên Hệ",
+                hero_name: "TÔ QUỐC ANH",
+                hero_desc: "Lập trình viên Web",
+                obj_title: "Mục Tiêu Nghề Nghiệp",
+                obj_desc: '"Áp dụng kiến thức chuyên môn và kinh nghiệm thực tế để xây dựng quy trình làm việc tối ưu, mang lại giá trị gia tăng thực sự cho khách hàng và doanh nghiệp. Tôi luôn hướng tới việc học hỏi không ngừng để trở thành nhân sự cốt lõi đóng góp cho sự phát triển của công ty."',
+                about_title: "Giới Thiệu",
+                about_p1: 'Xin chào, tôi là <strong class="text-white">TÔ QUỐC ANH</strong>, một lập trình viên không ngừng nỗ lực phát triển.<br><br>Sinh ra tại TP.HCM, trong thời gian học Khoa Tiếng Hàn tại ĐH Thủ Đức, nhờ sự hỗ trợ của giảng viên, tôi đã giành được học bổng du học Hàn Quốc. Năm 2017, tôi nhập học tại ĐH Yeungnam, hoàn thành 1 năm học tiếng và chuyển tiếp vào khoa CNTT (2018), nơi tôi tích lũy được nền tảng kỹ thuật vững chắc.',
+                about_p2: 'Với niềm đam mê công nghệ từ nhỏ, tôi rất thích khám phá các công nghệ mới. Tôi có kinh nghiệm thực tế trong việc phát triển web sử dụng Laravel, JavaScript, HTML/CSS. Tôi cam kết sẽ liên tục trau dồi kiến thức mới để đóng góp những giá trị tốt nhất cho doanh nghiệp.',
+                exp_title: "Kinh Nghiệm",
+                job1_company: "Công ty TNHH Boto",
+                job1_role: 'Thực tập sinh Web Developer <span class="text-gray-500 text-sm ml-2 font-normal">06/2022 - 05/2023</span>',
+                job1_task1: "Phát triển và bảo trì các tính năng của website theo yêu cầu khách hàng.",
+                job1_task2: 'Xây dựng ứng dụng web sử dụng <strong class="text-white">Laravel, JavaScript, CSS, HTML</strong>.',
+                job1_task3: "Triển khai tính năng nhập/xuất cho Hệ thống Quản lý Kho (WMS).",
+                job1_task4: 'Tối ưu hóa các quy trình cốt lõi như thêm, sửa, xóa sản phẩm (<strong class="text-white">CRUD</strong>).',
+                job2_company: "Công ty TNHH Nano IT",
+                job2_role: 'Thực tập sinh <span class="text-gray-500 text-sm ml-2 font-normal">06/2020 - 02/2021</span>',
+                job2_task1: "Tư vấn và hỗ trợ dịch vụ khách hàng chuyên nghiệp qua email.",
+                job2_task2: "Tiếp nhận và xử lý ban đầu các vấn đề liên quan đến dịch vụ IT.",
+                edu_title: "Học Vấn",
+                edu1_school: "Cao đẳng Đại học Yeungnam",
+                edu1_major: "Khoa Công nghệ Thông tin",
+                edu1_time: "Daegu | 03/2018 - 03/2021 (Tốt nghiệp)",
+                edu2_school: "Cao đẳng Công nghệ Thủ Đức",
+                edu2_major: "Khoa Tiếng Hàn Quốc",
+                edu2_time: "Việt Nam | 03/2015 - 03/2017 (Tốt nghiệp)",
+                cert_title: "Chứng Chỉ",
+                cert1_name: "TOPIK Cấp 4",
+                cert2_name: "TOEIC 400 Điểm",
+                contact_title: "Liên Hệ",
+                lbl_phone: "Điện thoại", lbl_email: "Email", lbl_dob: "Ngày sinh", lbl_address: "Địa chỉ",
+                val_address: "121D Đường 6, P. Phước Bình,<br>TP. Thủ Đức, HCM",
+                footer_txt: "&copy; 2026 TÔ QUỐC ANH. Developed with CSS & JS Magic."
+            },
+            en: {
+                nav_about: "About",
+                nav_exp: "Experience",
+                nav_edu: "Education",
+                nav_contact: "Contact",
+                hero_name: "TO QUOC ANH",
+                hero_desc: "Web Developer",
+                obj_title: "Professional Objective",
+                obj_desc: '"Applying professional knowledge and practical experience to build optimal workflows, bringing real added value to clients and businesses. Dedicated to continuous learning to become a core asset that contributes to the company\'s success."',
+                about_title: "About Me",
+                about_p1: 'Hello, I am <strong class="text-white">TO QUOC ANH</strong>, a continuously growing developer. <br><br> Born in Ho Chi Minh City, Vietnam, I received a scholarship to study in South Korea thanks to my excellent academic record while studying Korean at Thu Duc College. In 2017, I enrolled at Yeungnam University College, completed a 1-year language course, and then entered the Computer Information department in 2018, where I built a solid IT foundation.',
+                about_p2: 'Passionate about technology since childhood, I enjoy exploring new tech trends. I have practical experience in web development using Laravel, JavaScript, HTML/CSS. I am committed to continuously acquiring new skills to deliver the best value to the organization.',
+                exp_title: "Experience",
+                job1_company: "Boto Co., Ltd.",
+                job1_role: 'Web Developer Intern <span class="text-gray-500 text-sm ml-2 font-normal">06/2022 - 05/2023</span>',
+                job1_task1: "Developed and maintained website features based on client requirements.",
+                job1_task2: 'Built web applications using <strong class="text-white">Laravel, JavaScript, CSS, HTML</strong>.',
+                job1_task3: "Implemented inbound/outbound features for Warehouse Management System (WMS).",
+                job1_task4: 'Optimized core <strong class="text-white">CRUD</strong> processes for product management.',
+                job2_company: "Nano IT Co., Ltd.",
+                job2_role: 'Intern <span class="text-gray-500 text-sm ml-2 font-normal">06/2020 - 02/2021</span>',
+                job2_task1: "Provided professional customer support and consultation via email.",
+                job2_task2: "Handled initial troubleshooting and communication for IT service issues.",
+                edu_title: "Education",
+                edu1_school: "Yeungnam University College",
+                edu1_major: "Dept. of Computer Information",
+                edu1_time: "Daegu | 03/2018 - 03/2021 (Graduated)",
+                edu2_school: "Thu Duc College",
+                edu2_major: "Dept. of Korean Language",
+                edu2_time: "Vietnam | 03/2015 - 03/2017 (Graduated)",
+                cert_title: "Certificates",
+                cert1_name: "TOPIK Level 4",
+                cert2_name: "TOEIC 400 Score",
+                contact_title: "Contact Info",
+                lbl_phone: "Phone", lbl_email: "Email", lbl_dob: "Date of Birth", lbl_address: "Address",
+                val_address: "121D Street 6, Phuoc Binh Ward,<br>Thu Duc City, HCMC",
+                footer_txt: "&copy; 2026 TO QUOC ANH. Developed with CSS & JS Magic."
+            }
+        };
+
+        function changeLang(lang) {
+            // Update Text content based on data-i18n tags
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang] && translations[lang][key]) {
+                    el.innerHTML = translations[lang][key];
+                }
+            });
+
+            // Update active state of language buttons
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if(btn.innerText.toLowerCase() === lang.toLowerCase()) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+
+        // --- 2. Parallax Scroll Effect Engine ---
+        const neonSun = document.getElementById('neon-sun');
+        const cityBack = document.getElementById('city-back');
+        const heroText = document.getElementById('hero-text');
+
+        window.addEventListener('scroll', () => {
+            window.requestAnimationFrame(() => {
+                let scrollY = window.scrollY;
+                if(scrollY <= window.innerHeight) {
+                    neonSun.style.transform = `translate(calc(-50% + ${scrollY * 0.3}px), calc(-50% + ${scrollY * 0.4}px))`;
+                    cityBack.style.transform = `translateY(${scrollY * 0.3}px)`;
+                    heroText.style.transform = `translateY(${scrollY * 1.2}px)`;
+                    heroText.style.opacity = 1 - (scrollY / (window.innerHeight * 0.7));
+                }
+            });
+        });
+
+        // --- 3. Intersection Observer (Scroll Reveal) ---
+        const revealElements = document.querySelectorAll('.reveal');
+        const revealObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { root: null, threshold: 0.15, rootMargin: "0px 0px -50px 0px" });
+
+        revealElements.forEach(el => { revealObserver.observe(el); });
+    </script>
+</body>
+</html>
